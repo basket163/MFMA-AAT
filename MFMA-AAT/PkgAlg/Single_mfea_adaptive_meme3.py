@@ -361,12 +361,19 @@ def memetic(query, first_phen, first_val, population, fit_list):
     meme_num = 2
     meme_idx = list(map(fit_list.index, heapq.nsmallest(meme_num,fit_list)))
 
+    max_meme_fitness = int(query.pop_size)
+    current_meme_fitness = 0
+
     for i in meme_idx:
+        if current_meme_fitness > max_meme_fitness:
+            break
+
         arg_vec = population[i]
         arg_val = fit_list[i]
         #print(f'meme count {meme_idx}: {i}')
         #start_neighbour = util.sta_show_now_time_msg(msg='begin a neighbour ')
-        neighbour = gen_neighbour(query, first_phen)
+        #neighbour = gen_neighbour(query, first_phen)
+        neighbour = gen_neighbour(query, arg_vec)
         #util.sta_show_used_time_msg(start_neighbour, msg='')
         len_nei = len(neighbour)
 
@@ -391,6 +398,7 @@ def memetic(query, first_phen, first_val, population, fit_list):
                     break
 
                 nei_val = f1(query, neighbour[start_point])
+                current_meme_fitness += 1
                 if nei_val < first_val:
                     first_phen = neighbour[start_point]
                     first_val = nei_val

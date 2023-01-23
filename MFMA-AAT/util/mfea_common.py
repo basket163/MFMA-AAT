@@ -155,7 +155,7 @@ def x_two_point(p1, p2, _sbxdi=None, _pc=1.0):
 def x_uniform_point(p1, p2, _sbxdi=None, _pc=1.0):
     #交叉概率判断是否要做交叉
     randVar= np.random.rand()
-    if randVar>_pc:
+    if _pc<randVar:
         return p1, p2
 
     #print('uniform_point_x')
@@ -180,7 +180,7 @@ def x_uniform_point(p1, p2, _sbxdi=None, _pc=1.0):
     #for idx, gene in enumerate(p1):
     for idx in range(len(c1)):
         r = random.random()
-        if r > probability_of_swap:
+        if r < randVar:
             c1[idx] = p2[idx]
             c2[idx] = p1[idx]
     return c1, c2
