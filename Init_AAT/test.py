@@ -116,6 +116,7 @@ def fig_slot(x_lim, y_lim, slot_idx, u_in_bs_list, u_in_loc_list, u_in_speed, k_
         'my_green':'#5C9394'
     }
 
+    user_num = len(u_in_bs_list)
 
     #k-means分组的数量
     len_group = len(k_group)
@@ -123,7 +124,8 @@ def fig_slot(x_lim, y_lim, slot_idx, u_in_bs_list, u_in_loc_list, u_in_speed, k_
         print("k-means groups > 5")
         input("ctrl+c to exit.")
     # 基站是蓝色，用户是绿色，所以不能用blue和green
-    color_list_all = ['#32c18f', "blue", "orange", "purple", "brown"]
+    #color_list_all = ['#32c18f', "blue", "orange", "purple", "brown"]
+    color_list_all = ['#A4778E', "#4FC7BB", "#70818E", "#9E805A", "#7C84BC"]
     color_list_kmeans = color_list_all[:len_group]
 
     fig = plt.figure(figsize=(22,16), dpi=72)
@@ -237,12 +239,33 @@ def fig_slot(x_lim, y_lim, slot_idx, u_in_bs_list, u_in_loc_list, u_in_speed, k_
     # fig ue
     image_ue = mpimg.imread('ue.png')
     image_car = mpimg.imread('CarGrey.png')
-    imagebox_ue = OffsetImage(image_ue, zoom=0.5)
-    imagebox_car = OffsetImage(image_car, zoom=0.3)
+
+    image_ue_1 = mpimg.imread('pic/ue_red.png')
+    image_car_1 = mpimg.imread('pic/car_red.png')
+    image_ue_2 = mpimg.imread('pic/ue_green.png')
+    image_car_2 = mpimg.imread('pic/car_green.png')
+    image_ue_3 = mpimg.imread('pic/ue_gray.png')
+    image_car_3 = mpimg.imread('pic/car_gray.png')
+    # image_ue_4 = mpimg.imread('pic/ue_blue.png')
+    # image_car_4 = mpimg.imread('pic/car_blue.png')
+    image_ue_4 = mpimg.imread('pic/ue_yellow.png')
+    image_car_4 = mpimg.imread('pic/car_yellow.png')
+    image_ue_5 = mpimg.imread('pic/ue_purple.png')
+    image_car_5 = mpimg.imread('pic/car_purple.png')
+
+    image_ue_list = [image_ue_1, image_ue_2, image_ue_3, image_ue_4, image_ue_5]
+    image_car_list = [image_car_1, image_car_2, image_car_3, image_car_4, image_car_5]
+
+
+    # imagebox_ue = OffsetImage(image_ue, zoom=0.5)
+    # imagebox_car = OffsetImage(image_car, zoom=0.3)
+    
     man_offset = (0, -30)
     man_offset_right = (46, -5)
+    man_offset_down = (0, -31)
     car_offset = (0, 25)
     car_offset_right = (72, 0)
+    car_offset_up = (0, 28)
     ini_offset = (0, 0)
     pad = 55
     for u_idx, u in enumerate(u_in_loc_list):
@@ -255,6 +278,17 @@ def fig_slot(x_lim, y_lim, slot_idx, u_in_bs_list, u_in_loc_list, u_in_speed, k_
                 u_group_id = g_idx + 1
 
         #plt.scatter(u[0], u[1], s=5, c="#559922", marker='s')
+        #按分组设置不同颜色的图标
+        if user_num >= 500:
+            imagebox_ue = OffsetImage(image_ue_list[u_group_id-1], zoom=0.5)
+            imagebox_car = OffsetImage(image_car_list[u_group_id-1], zoom=0.3)
+        elif user_num <= 100:
+            imagebox_ue = OffsetImage(image_ue_list[u_group_id-1], zoom=0.5*1.2)
+            imagebox_car = OffsetImage(image_car_list[u_group_id-1], zoom=0.3*1.2)
+        else:
+            imagebox_ue = OffsetImage(image_ue_list[u_group_id-1], zoom=0.5*1.4)
+            imagebox_car = OffsetImage(image_car_list[u_group_id-1], zoom=0.3*1.4)
+
         speed = u_in_speed[u_idx]
         loc_x = u[0]
         loc_y = u[1]
@@ -262,12 +296,15 @@ def fig_slot(x_lim, y_lim, slot_idx, u_in_bs_list, u_in_loc_list, u_in_speed, k_
             loc_x += 30
         if u[1] < 30:
             loc_y += 30
+        #修正误差
+        loc_x = loc_x *1.2
         if speed > 10:
             ab_ue = AnnotationBbox(imagebox_car, (loc_x, loc_y),frameon=False,pad=0)
-            ini_offset = car_offset
+            ini_offset = car_offset_up #car_offset
             # move label away from frame
             if u[0] < pad or u[1] < pad or u[1] > 1280:
-                ini_offset = car_offset_right
+                #ini_offset = car_offset_right
+                ini_offset = car_offset_up
             '''
             if :
                 ini_offset = car_offset_right
@@ -276,14 +313,26 @@ def fig_slot(x_lim, y_lim, slot_idx, u_in_bs_list, u_in_loc_list, u_in_speed, k_
             '''
         else:
             ab_ue = AnnotationBbox(imagebox_ue, (loc_x, loc_y),frameon=False,pad=0)
-            ini_offset = man_offset
+            ini_offset = man_offset_down #man_offset
             # move label away from frame
             if u[0] < pad or u[1] < pad or u[1] > 1280:
-                ini_offset = man_offset_right
+                #ini_offset = man_offset_right
+                ini_offset = man_offset_down
         ax.add_artist(ab_ue)
         # msg
-        u_group_tip = f'[G{str(u_group_id)}]'
-        offsetbox_ue = TextArea("UE"+str(u_idx+1)+u_group_tip,textprops = dict(fontsize = 25, color=u_label_color))
+        if user_num >= 100:
+            #去掉标签信息
+            u_group_tip = f'[G{str(u_group_id)}]'
+            offsetbox_ue = TextArea("",textprops = dict(fontsize = 25, color=u_label_color))
+        elif user_num <= 10:
+            loc_x = round(u_in_loc_list[u_idx][0],2)
+            loc_y = round(u_in_loc_list[u_idx][1],2)
+            u_group_tip = f'(G{str(u_group_id)})[{loc_x}, {loc_y}]'
+            offsetbox_ue = TextArea("UE"+str(u_idx+1)+u_group_tip,textprops = dict(fontsize = 25, color=u_label_color))
+        else:
+            u_group_tip = f'(G{str(u_group_id)})'
+            offsetbox_ue = TextArea("UE"+str(u_idx+1)+u_group_tip,textprops = dict(fontsize = 25, color=u_label_color))
+        ##
         ab_text_ue = AnnotationBbox(offsetbox_ue, (loc_x, loc_y),
             xybox=ini_offset,
             xycoords='data',
@@ -293,12 +342,12 @@ def fig_slot(x_lim, y_lim, slot_idx, u_in_bs_list, u_in_loc_list, u_in_speed, k_
 
     # fig base station icon
     arr_lena = mpimg.imread('gNB.png')
-    imagebox = OffsetImage(arr_lena, zoom=1, alpha=0.4)
+    imagebox = OffsetImage(arr_lena, zoom=1.0, alpha=0.75) #alpha=0.4 #设置图标
     for idx, bs in enumerate(bs_tri):
         ab = AnnotationBbox(imagebox, (bs[0], bs[1]),frameon=False,pad=0)
         ax.add_artist(ab)
 
-        offsetbox = TextArea("gNB"+str(idx+1),textprops = dict(fontsize = 25, color="gray"))
+        offsetbox = TextArea("gNB"+str(idx+1),textprops = dict(fontsize = 25, color="black")) #black #设置基站标签
         ab_text = AnnotationBbox(offsetbox, (bs[0], bs[1]),
             xybox=(0, 40),
             xycoords='data',
@@ -316,6 +365,9 @@ def fig_slot(x_lim, y_lim, slot_idx, u_in_bs_list, u_in_loc_list, u_in_speed, k_
 def save_group(k_group, k_group_idx, slot_idx, path):
     save_pkl("group_"+str(slot_idx),k_group_idx,path)
 
+def save_ue_loc(object, slot_idx, path):
+    save_pkl("UE_loc_slot_"+str(slot_idx),object,path)
+
 #program start 
 cfg = Config()
 
@@ -323,24 +375,31 @@ logger = logging.getLogger()
 #logger.setLevel(level=logging.INFO)
 logger.setLevel(level=logging.WARNING)
 
+#把user_num和group_num都设置为0可以画空图
+
 #设置用户人数
-user_num = 50
+user_num = 100
 #设置分组数量
-group_num=5
+group_num=4
 #设置人车比例
-man_ratio = 0.5
+man_ratio = 0.6  # 500 UE = 0.8， 100 UE = 0.7, 50 UE = 0.6
 counter = 600 #1000
 # bs_x_min 0.0 bs_x_max 2051.7 bs_y_min 52.36 bs_y_max 1575.35
-x_lim = 2200 # 1000
-y_lim = 1600 # 1000
+x_lim = 2200 # 1000 原始设置2200
+y_lim = 1600 # 1000 原始设置1600
 env = Environment(x_lim, y_lim, renderer = CustomRenderer())
 user_type = np.zeros((user_num, 6)) 
 # 6: userId   userType(1或2)	userInCell(根据位置得到)	profileInServ(与InCell相同)	queue(初始为0)	requestUnit(5或10)
 
+#记录用户位置，并放入pkl文件
+pos_list = []
+
 comp_ratio=0.5
 #随机生成用户位置，按比例设置用户类型
 for i in range(0, user_num):
-    pos = (random.rand()*x_lim, random.rand()*y_lim, 1)
+    #横坐标+800，不然最后两列没有UE
+    pos = (random.rand()*(x_lim), random.rand()*(y_lim), 1)
+    pos_list.append(pos)
     ue_speed = 1.2 #(m/s)
     user_type[i, 0] = i
     if i >= user_num*man_ratio:
@@ -484,6 +543,7 @@ while counter != 0:
         # fig in each slot
         fig_slot(x_lim, y_lim, slot_idx, u_in_bs, u_in_loc, u_in_speed, k_group, k_group_idx, cfg)
         save_group(k_group, k_group_idx, slot_idx, cfg.outputPath)
+        save_ue_loc(u_in_loc, slot_idx, cfg.outputPath)
 
         # 初始位置保存到文件user_type, 后续移动位置保存到move
         if slot_idx == 1:
